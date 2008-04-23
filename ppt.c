@@ -20,6 +20,9 @@ int main()
 	struct timespec req = {0};
 	req.tv_nsec = 1000000;
 
+/* file pointer for time data storage */
+	FILE *fp;
+
 	if (ioperm(BASEPORT, 3, 1)) {
 		perror("ioperm");
 		exit(1);
@@ -29,43 +32,69 @@ int main()
 
 	while (status = (inb(STATUS) >> 3)^0x10) {
 		nanosleep(&req, NULL);
+		/* BUSY */
 		if((~(status >> 4) & 0x01) == ON && (BUSY_STATE != ON)) {
-			printf("BUSY ON\n");
+			fp = fopen("BUSY", "a");
+			fprintf(fp, "BUSY ON, %d\n", time(NULL));
+			fclose(fp);
 			BUSY_STATE = ON;
 		}
 		else if((~(status >> 4) & 0x01) == OFF && BUSY_STATE == ON) {
-			printf("BUSY OFF\n");
+			fp = fopen("BUSY", "a");
+			fprintf(fp, "BUSY OFF, %d\n", time(NULL));
+			fclose(fp);
 			BUSY_STATE = OFF;
 		}
+		/* ACK */
 		else if((~(status >> 3) & 0x01) == ON && (ACK_STATE != ON)) {
-			printf("ACK ON\n");
+			fp = fopen("ACK", "a");
+			fprintf(fp, "ACK ON, %d\n", time(NULL));
+			fclose(fp);
 			ACK_STATE = ON;
 		}
 		else if((~(status >> 3) & 0x01) == OFF && ACK_STATE == ON) {
-			printf("ACK OFF\n");
+			fp = fopen("ACK", "a");
+			fprintf(fp, "ACK OFF, %d\n", time(NULL));
+			fclose(fp);
 			ACK_STATE = OFF;
 		}
+		/* SLCT */
 		else if((~(status >> 1) & 0x01) == ON && (SLCT_STATE != ON)) {
-			printf("SLCT ON\n");
+			fp = fopen("SLCT", "a");
+			fprintf(fp, "SLCT ON, %d\n", time(NULL));
+			fclose(fp);
 			SLCT_STATE = ON;
 		}
 		else if((~(status >> 1) & 0x01) == OFF && SLCT_STATE == ON) {
-			printf("SLCT OFF\n");
+			fp = fopen("SLCT", "a");
+			fprintf(fp, "SLCT OFF, %d\n", time(NULL));
+			fclose(fp);
 			SLCT_STATE = OFF;
 		}
+		/* ERR */
 		else if(~(status & 0x01) == ON && (ERR_STATE != ON)) {
-			printf("ERR ON\n");
+			fp = fopen("ERR", "a");
+			fprintf(fp, "ERR ON, %d\n", time(NULL));
+			fclose(fp);
 			ERR_STATE = ON;
 		}
-		else if(~(status & 0x01) == OFF && ERR_STATE == ON){
+		else if(~(status & 0x01) == OFF && ERR_STATE == ON) {
+			fp = fopen("ERR", "a");
+			fprintf(fp, "ERR OFF, %d\n", time(NULL));
+			fclose(fp);
 			ERR_STATE = OFF;
 		}
+		/* PE */
 		else if((~(status >> 2) & 0x01) == ON && (PE_STATE != ON)) {
-			printf("PE ON\n");
+			fp = fopen("PE", "a");
+			fprintf(fp, "PE ON, %d\n", time(NULL));
+			fclose(fp);
 			PE_STATE = ON;
 		}
 		else if((~(status >> 2) & 0x01) == OFF && PE_STATE == ON) {
-			printf("PE OFF\n");
+			fp = fopen("PE", "a");
+			fprintf(fp, "PE OFF, %d\n", time(NULL));
+			fclose(fp);
 			PE_STATE = OFF;
 		}
 	}
