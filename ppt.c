@@ -29,8 +29,8 @@ int main()
 	char BUSY_STATE, ACK_STATE, ERR_STATE, SLCT_STATE, PE_STATE = OFF;
 
 /* setup structure for nanosleep() */
-	struct timespec req = {0};
-	req.tv_nsec = 1000000;
+	struct timespec delay = {0};
+	delay.tv_nsec = 1000000;
 
 /* file pointer for time data storage */
 	FILE *fp;
@@ -53,7 +53,7 @@ int main()
 	printf("status: %x\n", inb(STATUS));
 
 	while (status = (inb(STATUS) >> 3)^0x10) {
-		nanosleep(&req, NULL);
+		nanosleep(&delay, NULL);
 		/* BUSY */
 		if((~(status >> 4) & 0x01) == ON && (BUSY_STATE != ON)) {
 			output_on_time(fp, busy);
