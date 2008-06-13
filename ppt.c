@@ -21,7 +21,7 @@
 void output_on_time(FILE *, const char fname[]);
 void output_off_time(FILE *, const char fname[]);
 
-int main()
+int main(int argc, char **argv)
 {
 	int status; /* Container for STATUS bits 3 - 7 */
 
@@ -49,6 +49,23 @@ int main()
 	const char slct[] = "SLCT";
 	const char err[] = "ERR";
 	const char pe[] = "PE";
+
+	while(--argc > 0) {
+		char c;
+		c = **++argv;
+		if(c == '-') {
+			++*argv;
+			c = **argv;
+			switch(c) {
+				case 't':
+					printf("It works!\n");
+					break;
+				default:
+					printf("You broke it!\n");
+					break;
+			}
+		}
+	}
 
 	printf("status: %x\n", inb(STATUS));
 
