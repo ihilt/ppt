@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	const char err[] = "ERR";
 	const char pe[] = "PE";
 
-	char *of;	/* name of output file if given */
+	char *of;		/* name of output file if given */
 
 	char c;
 	int i = argc;
@@ -130,9 +130,9 @@ void output_on_time(FILE *fp, char *fname, const char *sname)
 		fp = fopen(fname, "a");
 		fprintf(fp, "%s ON, %d\n", sname, time(NULL));
 		fclose(fp);
-	}
-	else
+	} else {
 		fprintf(stdout, "%s ON, %d\n", sname, time(NULL));
+	}
 }
 
 void output_off_time(FILE *fp, char *fname, const char *sname)
@@ -142,7 +142,7 @@ void output_off_time(FILE *fp, char *fname, const char *sname)
 		fp = fopen(fname, "a");
 		fprintf(fp, "%s OFF, %d\n", sname, time(NULL));
 		fclose(out);
-	}
-	else
+	} else {
 		fprintf(stdout, "%s OFF, %d\n", sname, time(NULL));
+	}
 }
