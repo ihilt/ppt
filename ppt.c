@@ -23,13 +23,13 @@ void output_off_time(FILE *, const char fname[]);
 
 int main()
 {
-	int status; /* Container for STATUS bits 3 - 7 */
+	int status;		/* Container for STATUS bits 3 - 7 */
 
 /* Flow control variables */
 	char BUSY_STATE, ACK_STATE, ERR_STATE, SLCT_STATE, PE_STATE = OFF;
 
 /* setup structure for nanosleep() */
-	struct timespec delay = {0};
+	struct timespec delay = { 0 };
 	delay.tv_nsec = 1000000;
 
 /* file pointer for time data storage */
@@ -52,50 +52,51 @@ int main()
 
 	printf("status: %x\n", inb(STATUS));
 
-	while (status = (inb(STATUS) >> 3)^0x10) {
+	while (status = (inb(STATUS) >> 3) ^ 0x10) {
 		nanosleep(&delay, NULL);
 		/* BUSY */
-		if((~(status >> 4) & 0x01) == ON && (BUSY_STATE != ON)) {
+		if ((~(status >> 4) & 0x01) == ON && (BUSY_STATE != ON)) {
 			output_on_time(fp, busy);
 			BUSY_STATE = ON;
-		}
-		else if((~(status >> 4) & 0x01) == OFF && BUSY_STATE == ON) {
+		} else if ((~(status >> 4) & 0x01) == OFF
+			   && BUSY_STATE == ON) {
 			output_off_time(fp, busy);
 			BUSY_STATE = OFF;
 		}
 		/* ACK */
-		else if((~(status >> 3) & 0x01) == ON && (ACK_STATE != ON)) {
+		else if ((~(status >> 3) & 0x01) == ON
+			 && (ACK_STATE != ON)) {
 			output_on_time(fp, ack);
 			ACK_STATE = ON;
-		}
-		else if((~(status >> 3) & 0x01) == OFF && ACK_STATE == ON) {
+		} else if ((~(status >> 3) & 0x01) == OFF
+			   && ACK_STATE == ON) {
 			output_off_time(fp, ack);
 			ACK_STATE = OFF;
 		}
 		/* SLCT */
-		else if((~(status >> 1) & 0x01) == ON && (SLCT_STATE != ON)) {
+		else if ((~(status >> 1) & 0x01) == ON
+			 && (SLCT_STATE != ON)) {
 			output_on_time(fp, slct);
 			SLCT_STATE = ON;
-		}
-		else if((~(status >> 1) & 0x01) == OFF && SLCT_STATE == ON) {
+		} else if ((~(status >> 1) & 0x01) == OFF
+			   && SLCT_STATE == ON) {
 			output_off_time(fp, slct);
 			SLCT_STATE = OFF;
 		}
 		/* ERR */
-		else if(~(status & 0x01) == ON && (ERR_STATE != ON)) {
+		else if (~(status & 0x01) == ON && (ERR_STATE != ON)) {
 			output_on_time(fp, err);
 			ERR_STATE = ON;
-		}
-		else if(~(status & 0x01) == OFF && ERR_STATE == ON) {
+		} else if (~(status & 0x01) == OFF && ERR_STATE == ON) {
 			output_off_time(fp, err);
 			ERR_STATE = OFF;
 		}
 		/* PE */
-		else if((~(status >> 2) & 0x01) == ON && (PE_STATE != ON)) {
+		else if ((~(status >> 2) & 0x01) == ON && (PE_STATE != ON)) {
 			output_on_time(fp, pe);
 			PE_STATE = ON;
-		}
-		else if((~(status >> 2) & 0x01) == OFF && PE_STATE == ON) {
+		} else if ((~(status >> 2) & 0x01) == OFF
+			   && PE_STATE == ON) {
 			output_off_time(fp, pe);
 			PE_STATE = OFF;
 		}
