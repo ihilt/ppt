@@ -18,23 +18,19 @@
  * output_off_time() sends the timestamp to fp with the name of the signal and
  * the "OFF" string.
  */
-void output_on_time(FILE *, char *output, const char *signal_name);
-void output_off_time(FILE *, char *output, const char *signal_name);
+void output_on_time(char *output, const char *signal_name);
+void output_off_time(char *output, const char *signal_name);
 
 int main(int argc, char **argv)
 {
 	int status;		/* Container for STATUS bits 3 - 7 */
-
-/* Flow control variables */
-	char BUSY_STATE, ACK_STATE, ERR_STATE, SLCT_STATE, PE_STATE = OFF;
-
-/* setup structure for nanosleep() */
+	char BUSY_STATE,
+	     ACK_STATE,
+	     ERR_STATE,
+	     SLCT_STATE,
+	     PE_STATE	= OFF;
 	struct timespec delay = { 0 };
 	delay.tv_nsec = 1000000;
-
-/* file pointer for time data storage */
-	FILE *fp;
-
 
 	if (ioperm(BASEPORT, 3, 1)) {
 		perror("ioperm");
@@ -70,50 +66,41 @@ int main(int argc, char **argv)
 
 	while (status = (inb(STATUS) >> 3) ^ 0x10) {
 		nanosleep(&delay, NULL);
-		/* BUSY */
 		if ((~(status >> 4) & 0x01) == ON && (BUSY_STATE != ON)) {
-			output_on_time(fp, of, busy);
+			output_on_time(of, busy);
 			BUSY_STATE = ON;
 		} else if ((~(status >> 4) & 0x01) == OFF
 			   && BUSY_STATE == ON) {
-			output_off_time(fp, of, busy);
+			output_off_time(of, busy);
 			BUSY_STATE = OFF;
-		}
-		/* ACK */
-		else if ((~(status >> 3) & 0x01) == ON
+		} else if ((~(status >> 3) & 0x01) == ON
 			 && (ACK_STATE != ON)) {
-			output_on_time(fp, of, ack);
+			output_on_time(of, ack);
 			ACK_STATE = ON;
 		} else if ((~(status >> 3) & 0x01) == OFF
 			   && ACK_STATE == ON) {
-			output_off_time(fp, of, ack);
+			output_off_time(of, ack);
 			ACK_STATE = OFF;
-		}
-		/* SLCT */
-		else if ((~(status >> 1) & 0x01) == ON
+		} else if ((~(status >> 1) & 0x01) == ON
 			 && (SLCT_STATE != ON)) {
-			output_on_time(fp, of, slct);
+			output_on_time(of, slct);
 			SLCT_STATE = ON;
 		} else if ((~(status >> 1) & 0x01) == OFF
 			   && SLCT_STATE == ON) {
-			output_off_time(fp, of, slct);
+			output_off_time(of, slct);
 			SLCT_STATE = OFF;
-		}
-		/* ERR */
-		else if (~(status & 0x01) == ON && (ERR_STATE != ON)) {
-			output_on_time(fp, of, err);
+		} else if (~(status & 0x01) == ON && (ERR_STATE != ON)) {
+			output_on_time(of, err);
 			ERR_STATE = ON;
 		} else if (~(status & 0x01) == OFF && ERR_STATE == ON) {
-			output_off_time(fp, of, err);
+			output_off_time(of, err);
 			ERR_STATE = OFF;
-		}
-		/* PE */
-		else if ((~(status >> 2) & 0x01) == ON && (PE_STATE != ON)) {
-			output_on_time(fp, of, pe);
+		} else if ((~(status >> 2) & 0x01) == ON && (PE_STATE != ON)) {
+			output_on_time(of, pe);
 			PE_STATE = ON;
 		} else if ((~(status >> 2) & 0x01) == OFF
 			   && PE_STATE == ON) {
-			output_off_time(fp, of, pe);
+			output_off_time(of, pe);
 			PE_STATE = OFF;
 		}
 	}
@@ -124,9 +111,10 @@ int main(int argc, char **argv)
 	exit(0);
 }
 
-void output_on_time(FILE *fp, char *fname, const char *sname)
+void output_on_time(char *fname, const char *sname)
 {
 	if (fname != NULL) {
+		FILE *fp;
 		fp = fopen(fname, "a");
 		fprintf(fp, "%s ON, %d\n", sname, time(NULL));
 		fclose(fp);
@@ -135,13 +123,13 @@ void output_on_time(FILE *fp, char *fname, const char *sname)
 	}
 }
 
-void output_off_time(FILE *fp, char *fname, const char *sname)
+void output_off_time(char *fname, const char *sname)
 {
-	FILE *out;
 	if (fname != NULL) {
+		FILE *fp;
 		fp = fopen(fname, "a");
 		fprintf(fp, "%s OFF, %d\n", sname, time(NULL));
-		fclose(out);
+		fclose(fp);
 	} else {
 		fprintf(stdout, "%s OFF, %d\n", sname, time(NULL));
 	}
