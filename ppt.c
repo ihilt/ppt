@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/io.h>
 #include <time.h>
-#include </usr/src/linux/include/asm/io.h>
 
 #define BASEPORT	0x378
 #define STATUS		BASEPORT+1
@@ -23,48 +23,42 @@ void output_off_time(char *output, const char *signal_name);
 
 int main(int argc, char **argv)
 {
-	int status;		/* Container for STATUS bits 3 - 7 */
-	char BUSY_STATE,
-	     ACK_STATE,
-	     ERR_STATE,
-	     SLCT_STATE,
-	     PE_STATE	= OFF;
-	struct timespec delay = { 0 };
-	delay.tv_nsec = 1000000;
+	int status;		/* Container for STATUS bits 3...7 */
+	char BUSY_STATE = OFF;
+	char ACK_STATE  = OFF;
+	char ERR_STATE  = OFF;
+	char SLCT_STATE = OFF;
+	char PE_STATE   = OFF;
 
-	if (ioperm(BASEPORT, 3, 1)) {
-		perror("ioperm");
-		exit(1);
-	}
-
-/*
- * There might be a better way to do this, but for now I've collected all of
- * the signal name strings here.
- */
 	const char busy[] = "BUSY";
-	const char ack[] = "ACK";
+	const char ack[]  = "ACK";
+	const char err[]  = "ERR";
 	const char slct[] = "SLCT";
-	const char err[] = "ERR";
-	const char pe[] = "PE";
+	const char pe[]   = "PE";
 
-	char *of;		/* name of output file if given */
+	char *of = NULL;    /* name of output file defaults to NULL */
+
+	struct timespec delay = { 0 };
 
 	char c;
 	int i = argc;
 	while (--argc > 0 && **++argv == '-')
-		while (c = *++argv[0])
+		while ((c = *++argv[0]))
 			switch (c) {
 			case 'f':
 				of = argv[i - argc];
 				break;
 			default:
-				of = NULL;
 				break;
 			}
-
+	if (ioperm(BASEPORT, 3, 1)) {
+		perror("ioperm");
+		exit(1);
+	}
 	printf("status: %x\n", inb(STATUS));
 
-	while (status = (inb(STATUS) >> 3) ^ 0x10) {
+	delay.tv_nsec = 1000000;
+	while ((status = (inb(STATUS) >> 3) ^ 0x10)) {
 		nanosleep(&delay, NULL);
 		if ((~(status >> 4) & 0x01) == ON && (BUSY_STATE != ON)) {
 			output_on_time(of, busy);
@@ -116,10 +110,10 @@ void output_on_time(char *fname, const char *sname)
 	if (fname != NULL) {
 		FILE *fp;
 		fp = fopen(fname, "a");
-		fprintf(fp, "%s ON, %d\n", sname, time(NULL));
+		fprintf(fp, "%s ON, %d\n", sname, (int) time(NULL));
 		fclose(fp);
 	} else {
-		fprintf(stdout, "%s ON, %d\n", sname, time(NULL));
+		fprintf(stdout, "%s ON, %d\n", sname, (int) time(NULL));
 	}
 }
 
@@ -128,9 +122,9 @@ void output_off_time(char *fname, const char *sname)
 	if (fname != NULL) {
 		FILE *fp;
 		fp = fopen(fname, "a");
-		fprintf(fp, "%s OFF, %d\n", sname, time(NULL));
+		fprintf(fp, "%s OFF, %d\n", sname, (int) time(NULL));
 		fclose(fp);
 	} else {
-		fprintf(stdout, "%s OFF, %d\n", sname, time(NULL));
+		fprintf(stdout, "%s OFF, %d\n", sname, (int) time(NULL));
 	}
 }
